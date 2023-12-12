@@ -1,0 +1,121 @@
+<html lang="en">
+
+<head>
+	<meta charset="utf-8">
+	<title>Web Component Boilerplate</title>
+</head>
+
+<body>
+<h1>Simple Lifecycle and Attribute Changes</h1>
+<p>Look at the console to see the various lifecycle events. </p>
+<p>Note the two approaches for Light and Shadow DOM are highlighted and some have been moved.  The DOM creation for light DOM always belongs in the connectedCallback since the DOM tree isn't there yet until connected.  If doing shadow you are of course ok to do in either place.  I noticed that many examples and lots of ChatGPT generated code will introduce many subtle problems like this.  Often this won't be a problem until you start doing standard DOM stuff, so many tutorials will bake in various problems.  In short, be careful!</p>
+
+<p><mark>Make sure to look at the Devtools console to see the messages</mark> for things being added or removed.</p>
+<hr>
+
+<input type="button" id="addBtn" value="Add Component" >
+<input type="button" id="removeBtn" value="Delete Component">
+<input type="button" id="modifyBtn" value="Modify Attribute">
+
+<hr>
+
+<my-wc someattr="0"></my-wc>
+
+<script type="module">
+	window.addEventListener('DOMContentLoaded', init);
+
+	function init() {
+		console.log('DOM fully loaded and parsed');
+
+		// wire up the add button
+		let addBtn = document.getElementById('addBtn');
+		addBtn.addEventListener('click', function () {
+			let el = document.createElement('my-wc');
+			document.body.appendChild(el);
+		});
+
+		// wire up the remove button
+		let removeBtn = document.getElementById('removeBtn');
+		removeBtn.addEventListener('click', function () {
+			let el = document.querySelector('my-wc');
+			if (el)
+				document.body.removeChild(el);
+		});
+
+		// wire up the modify button
+		let modifyBtn = document.getElementById('modifyBtn');
+		modifyBtn.addEventListener('click', function () {
+			let el = document.querySelector('my-wc');
+			if (el)
+				el.setAttribute('someattr', Math.random());
+		});
+	}
+</script>
+<script type="module">
+	// A variation of the definition approach
+	customElements.define('my-wc', class extends HTMLElement {
+
+		/**
+		 * The class constructor object
+		 */
+		constructor () {
+			super();
+
+			/* Approach #1 - use shadow DOM
+			// create shadow root
+			this.attachShadow({mode : 'open'});
+			// add simple heading to the shadow root
+			this.shadowRoot.innerHTML = `
+				<h1>Hello Web Component (Shadow DOM)</h1>
+			`;
+
+			 */
+
+
+			console.log('constructed!', this);
+		}
+
+		/**
+		 * Runs each time the element is appended to or moved in the DOM
+		 */
+		connectedCallback () {
+			console.log('connected!', this);
+			/* Approach 2 - using the light DOM watch out for using the constructor for that!!! Now why did I move this here...well it is a good idea to do this in the connectedCallback as opposed to the constructor because that actually isn't right despite the common way it is done.  The reason is that the constructor is called when the element is created and the element is not yet in the DOM.  So if you try to do DOM manipulation in the constructor it will fail.  The connectedCallback is called when the element is added to the DOM so it is safe to do DOM manipulation there. */
+
+			// Move the line below to constructor and watch how you throw an error when doing a createElement.  You can see people not trying all the DOM things probably never saw this type of error and show used constructor creation safely.  But it is not the right place to do it.  If you do it all Shadow DOM you won't see that type of error.  You also might find you get away with because of some permissiveness in some browsers...but it is not right.
+			this.innerHTML =`<h1>Hello Web Component (Light DOM)</h1>`;
+
+		}
+
+		/**
+		 * Runs when the element is removed from the DOM
+		 */
+		disconnectedCallback () {
+			console.log('disconnected', this);
+		}
+
+		/**
+		 * Runs when the value of an attribute is changed on the component
+		 * @requires observedAttributes() method
+		 * @param  {String} name     The attribute name
+		 * @param  {String} oldValue The old attribute value
+		 * @param  {String} newValue The new attribute value
+		 */
+		attributeChangedCallback (name, oldValue, newValue) {
+			console.log('changed', name, oldValue, newValue, this);
+		}
+
+		/**
+		 * Create a list of attributes to observe
+		 * @return  {Array} The attributes to observe
+		 */
+		static get observedAttributes () {
+			return ['someattr'];
+		}
+
+	});
+
+</script>
+
+</body>
+</html>

@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Current Weather</title>
+</head>
+<body>
+
+    <current-weather>
+        Current Weather Conditions Unavailable
+    </current-weather>
+    
+    <script type="module">
+        const latitude = '32.842674';
+        const longitude = '-117.257767';
+        const APIURL = `https://api.weather.gov/points/${latitude},${longitude}`;
+    
+        class CurrentWeather extends HTMLElement {
+            constructor() {
+                super();
+    
+                this.attachShadow({ mode: 'open' });
+                this.heading = document.createElement('h1');
+                this.heading.innerHTML = 'Current Weather'
+                this.shadowRoot.appendChild(this.heading);
+                this.weatherDisplay = document.createElement('div');
+                this.shadowRoot.appendChild(this.weatherDisplay);
+            }
+    
+            connectedCallback() {
+                this.fetchWeather();
+            }
+    
+            fetchWeather() {
+                fetch(APIURL)
+                    .then(response => response.json())
+                    .then(data => {
+                        const forecastURL = data.properties.forecast;
+                        return fetch(forecastURL);
+                    })
+                    .then(response => response.json())
+                    .then(forecastData => {
+                        const { temperature, shortForecast } = forecastData.properties.periods[0];
+                        this.updateWeather(temperature, shortForecast);
+                    })
+                    .catch(error => {
+                        console.error('Fetch error!');
+                    });
+            }
+    
+            updateWeather(temperature, forecast) {
+                const iconFilename = this.getIconFilename(forecast);
+                this.weatherDisplay.innerHTML = `
+                    <img src="${iconFilename}" alt="${forecast}" style="width: 50px; height: auto; vertical-align: middle;">
+                    <p style="display:inline; font-size: 24px; vertical-align: middle;">${forecast} ${temperature}°F</p>
+                `;
+            }
+    
+            getIconFilename(forecast) {
+                // Mapping of forecast to icons
+                const iconMap = {
+                    'Patchy Fog': 'cloudy.png',
+                    'Cloudy': 'cloudy.png',
+                    'Mostly Cloudy': 'cloudy.png',
+                    'Partly Cloudy': 'cloudywithsun.png',
+                    'Mostly Sunny': 'cloudywithsun.png',
+                    'Sunny': 'sunny.png',
+                    'Clear': 'sunny.png',
+                    'Rain': 'rain.png',
+                    'Showers': 'rain.png',
+                    'Rainy': 'rain.png',
+                    'Windy': 'windy.png',
+                    'Breezy': 'windy.png'
+                };
+                return `./weather-icons/${iconMap[forecast] || 'default.png'}`;
+            }
+    
+            disconnectedCallback() {}
+        }
+
+        customElements.define('current-weather', CurrentWeather);
+    
+    </script>
+    
+
+
+
+</body>
+</html>

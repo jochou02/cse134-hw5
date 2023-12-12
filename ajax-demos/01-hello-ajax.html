@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<title>Hello Ajax World</title>
+	<style>
+		output {
+			font-family: monospace;
+			display : block;
+			font-size : 2rem;
+			margin : 4rem;
+		}
+	</style>
+</head>
+<body>
+<h1>Hello Ajax World</h1>
+<output>&nbsp;</output>
+<form>
+<button type="button">Get Time</button>
+</form>
+<script type="module">
+	// simple script using an XMLHTTPRequest object calling https://worldtimeapi.org/api/ip and displaying the time in the output element
+
+	// get references to the output element and the button
+	const output = document.querySelector('output');
+	const button = document.querySelector('button');
+
+	// wire up the button to call the API
+	button.addEventListener('click', () => {
+		// create the request object
+		const request = new XMLHttpRequest();
+
+		// set up the request
+		request.open('GET', 'https://worldtimeapi.org/api/ip');
+
+		// set up the event handler for the request
+		request.addEventListener('load', () => {
+			// check the status of the response
+			if (request.status === 200) {
+				// parse the response
+				const response = JSON.parse(request.responseText);
+
+				// display the time
+				output.textContent = response.datetime;
+			}
+		});
+
+		// send the request
+		request.send();
+	});
+</script>
+</body>
+</html>

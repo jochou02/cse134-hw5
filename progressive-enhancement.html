@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Rating Widget</title>
+</head>
+<body>
+
+<rating-widget>
+    <noscript>
+        <rating-widget>
+            <form action="https://httpbin.org/post" method="POST">
+                <label for="rating">How satisfied are you?</label>
+                <input type="hidden" name="question" value="How satisfied are you?">
+                <input type="hidden" name="sentBy" value="HTML">
+                <input type="number" id="rating" name="rating" min="1" max="5" value="0" required>
+                <button type="submit">Submit</button>
+            </form>
+        </rating-widget>
+    </noscript>
+</rating-widget>
+
+<script type="module">
+    class RatingWidget extends HTMLElement {
+        constructor() {
+            super();
+            this.attachShadow({ mode: 'open' });
+
+            const style = document.createElement('style');
+            style.textContent = `
+                span {
+                    font-size: 40px;
+                    cursor: pointer;
+                }
+                span.filled {
+                    color: gold;
+                }
+            `;
+            this.shadowRoot.appendChild(style);
+
+            this.ratingTitle = document.createElement('h1');
+            this.ratingTitle.textContent = "Rating Widget";
+            this.shadowRoot.appendChild(this.ratingTitle);
+
+            this.ratingContainer = document.createElement('div');
+            this.shadowRoot.appendChild(this.ratingContainer);
+            for (let i = 1; i <= 5; i++) {
+                const star = document.createElement('span');
+                star.textContent = '☆';
+                star.setAttribute('data-value', i);
+                star.addEventListener('mouseenter', this.updateRatingDisplay.bind(this));
+                star.addEventListener('mouseleave', this.resetRatingDisplay.bind(this));
+                star.addEventListener('click', this.submitRating.bind(this));
+                this.ratingContainer.appendChild(star);
+            }
+            this.currentRating = 0;
+        }
+
+        updateRatingDisplay(event) {
+            this.resetRatingDisplay();
+            let currentStar = event.target;
+            let currentValue = parseInt(currentStar.getAttribute('data-value'));
+            this.highlightStars(currentValue);
+        }
+
+        resetRatingDisplay() {
+            for (let star of this.ratingContainer.children) {
+                star.textContent = '☆';
+                star.classList.remove('filled');
+            }
+        }
+
+        highlightStars(value) {
+            for (let i = 0; i < value; i++) {
+                this.ratingContainer.children[i].textContent = '★';
+                this.ratingContainer.children[i].classList.add('filled');
+            }
+        }
+
+        submitRating(event) {
+            let rating = parseInt(event.target.getAttribute('data-value'));
+            this.currentRating = rating;
+            let ratingPercentage = (this.currentRating / 5) * 100;
+
+            let message;
+            if (ratingPercentage >= 80) {
+                message = `Thanks for ${this.currentRating} star rating!`;
+            } else {
+                message = `Thanks for your feedback of ${this.currentRating} stars. We'll try to do better!`;
+            }
+
+            const formData = new URLSearchParams();
+            formData.append('question', 'How satisfied are you?');
+            formData.append('rating', this.currentRating.toString());
+            formData.append('sentBy', 'js');
+
+            fetch('https://httpbin.org/post', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                    'X-Sent-By': 'JS' 
+                },
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                console.log(data);
+                this.ratingContainer.innerHTML = message;
+            })
+            .catch(error => console.error('Error:', error));
+        }
+
+        connectedCallback() {}
+
+        disconnectedCallback() {}
+    }
+
+    customElements.define('rating-widget', RatingWidget);
+</script>
+
+
+
+
+
+
+</body>
+</html>

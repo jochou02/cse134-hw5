@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<title>FormData Demo</title>
+	<style media="screen">
+
+		form-field {
+			display: grid;
+			grid-template-columns: 1fr 4fr;
+			margin: 1rem;
+			width : 50%;
+		}
+
+		form-field label {
+			font-weight : bold;
+		}
+
+		output {
+			font-family: monospace;
+			display: block;
+			font-size: 1.5rem;
+			margin: 2rem;
+			border: 1px solid #ddd;
+			padding: 1rem;
+			white-space : pre;
+			color : lime;
+			background-color: black;
+		}
+	</style>
+</head>
+<body>
+<h1>FormData Demo</h1>
+<!-- Q: Could we add the action and method and fallback? -->
+<form id="myForm">
+	<form-field>
+		<label for="name">Name:</label>
+		<input type="text" id="name" name="name">
+	</form-field>
+	<form-field>
+		<label for="email">Email:</label>
+		<input type="email" id="email" name="email">
+	</form-field>
+	<form-field>
+		<label for="comments">Comments:</label>
+		<textarea id="comments" name="comments"></textarea>
+	</form-field>
+	<form-field>
+		<label for="submitBtn">&nbsp;</label>
+		<button type="submit" id="submitBtn">Send</button>
+	</form-field>
+</form>
+<output id="responseOutput">&nbsp;</output>
+
+<script type="module">
+	document.getElementById('myForm').addEventListener('submit', function(event) {
+		event.preventDefault();
+
+		// Prepare FormData from the form
+		let formData = new FormData(this);
+
+		// Create a new XMLHttpRequest
+		let xhr = new XMLHttpRequest();
+
+		// Set up the request
+		xhr.open('POST', 'https://httpbin.org/post', true);
+
+		// set a fun header
+		xhr.setRequestHeader('X-Sent-By', 'XHR');
+
+		// Set up a function to handle the response
+		xhr.onload = function() {
+			if (xhr.status === 200) {
+				// On success, display the response
+				document.getElementById('responseOutput').textContent = xhr.responseText;
+			} else {
+				console.error('Error:', xhr.statusText);
+			}
+		};
+
+		// Handle network errors
+		xhr.onerror = function() {
+			console.error('Network Error');
+		};
+
+		// Send the request
+		xhr.send(formData);
+	});
+</script>
+</body>
+</html>

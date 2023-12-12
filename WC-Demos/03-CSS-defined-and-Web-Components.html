@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<title>Current Time Component</title>
+	<style>
+		/* two useful rules to show how to address a defined and undefined component */
+
+		current-time:not(:defined) {
+			background : red;
+		}
+
+		current-time:defined {
+
+			display : inline-block;
+
+			border : .15rem dashed grey;
+			padding : .25rem;
+		}
+	</style>
+
+</head>
+<body>
+<h1>The demo shows the idea of a CSS selector to deal with the undefined Web Component and then a timer eventually defines it and you see it kick in and restyle</h1>
+<current-time>
+	<!-- we could consider some slotted content that is a bit more semantic?  -->
+	<time>--:--:--</time>
+</current-time>
+<script type="module">
+	class CurrentTime extends HTMLElement {
+
+		constructor() {
+			super(); // Always call super() first in the constructor.
+
+			// Create a shadow root to encapsulate styles.
+			this.attachShadow({ mode: 'open' });
+
+			// Create elements inside the shadow root.
+			this.timeDisplay = document.createElement('span');
+
+			this.shadowRoot.appendChild(this.timeDisplay);
+		}
+
+		connectedCallback() {
+			this.updateTime();
+
+			// Update the time every second.
+			this.interval = setInterval(() => {
+				this.updateTime();
+			}, 1000);
+		}
+
+		disconnectedCallback() {
+			// Clear the interval when the element is removed from the document.
+			clearInterval(this.interval);
+		}
+
+		updateTime() {
+			const now = new Date();
+			this.timeDisplay.textContent = now.toLocaleString();
+		}
+	}
+
+	// Define the new element use a delay to show the use of the defined psuedo-class
+	setTimeout(function () { customElements.define('current-time', CurrentTime);} , 5000);
+</script>
+</body>
+</html>

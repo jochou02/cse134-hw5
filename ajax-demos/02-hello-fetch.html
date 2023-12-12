@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<title>Hello Fetch World</title>
+	<style>
+		output {
+			font-family: monospace;
+			display: block;
+			font-size: 2rem;
+			margin: 4rem;
+		}
+	</style>
+</head>
+<body>
+<h1>Hello Fetch World</h1>
+<output>&nbsp;</output>
+<form>
+	<button type="button">Get Time</button>
+</form>
+<script type="module">
+	// Simple script using fetch API calling https://worldtimeapi.org/api/ip and displaying the time in the output element
+
+	// Get references to the output element and the button
+	const output = document.querySelector('output');
+	const button = document.querySelector('button');
+
+	// Wire up the button to call the API
+	button.addEventListener('click', () => {
+		// Call the fetch API
+		fetch('https://worldtimeapi.org/api/ip')
+			.then(response => {
+				// Check if the response is ok (status in the range 200-299)
+				if (!response.ok) {
+					throw new Error('Network response was not ok');
+				}
+				return response.json();
+			})
+			.then(data => {
+				// Display the time
+				output.textContent = data.datetime;
+			})
+			.catch(error => {
+				// Handle any errors
+				console.error('Fetch error:', error);
+				output.textContent = 'Error fetching time';
+			});
+	});
+</script>
+</body>
+</html>

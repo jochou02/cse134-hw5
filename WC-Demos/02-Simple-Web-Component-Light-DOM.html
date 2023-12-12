@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<title>Current Time Component</title>
+	<style>
+		/* since this component is in the light DOM, we can style it directly */
+		current-time {
+			background : red;
+		}
+
+		/* using a descendent selector since the pieces are written to the light DOM we can style them directly */
+		current-time span {
+			font-family : monospace;
+			font-size: 1.5rem;
+		}
+
+		span {
+		/* This shows the possibility of composition of effecting all spans */
+
+			/* these would add in */
+			font-weight : bold;
+			text-decoration : underline;
+
+			/* these would not as the more specific rule wins */
+			font-size: 3rem;
+			font-family : sans-serif;
+		}
+	</style>
+</head>
+<body>
+
+
+<current-time>
+	Clock not available
+</current-time>
+
+<p>Notice that the <span>span here is styled</span> one way while our light DOM scoped one is done differently</p>
+
+<script type="module">
+	// we do a simple inline script here you could easily externalize this but our point here is easy learning.
+	class CurrentTime extends HTMLElement {
+		constructor() {
+
+			super();
+
+			this.innerHTML = ''; // clear out the light DOM fallback content
+
+			// Create elements in light DOM.
+			this.timeDisplay = document.createElement('span');
+			this.appendChild(this.timeDisplay);
+		}
+
+		connectedCallback() {
+			this.updateTime();
+
+			// Update the time every second.
+			this.interval = setInterval(() => {
+				this.updateTime();
+			}, 1000);
+		}
+
+		disconnectedCallback() {
+			// Clear the interval when the element is removed from the document.
+			clearInterval(this.interval);
+		}
+
+		updateTime() {
+			const now = new Date();
+			this.timeDisplay.textContent = now.toLocaleString();
+		}
+	}
+
+	// Define the new element
+	customElements.define('current-time', CurrentTime);
+
+</script>
+
+</body>
+</html>

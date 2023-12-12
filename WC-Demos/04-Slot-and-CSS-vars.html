@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<title>CSS Vars and Slot Example</title>
+	<style>
+		shout-out:not(:defined) {
+			display : none;
+		}
+
+		#custom {
+			--background-color : green;
+			--text-color : yellow;
+			--text-size : 5rem;
+		}
+
+	</style>
+</head>
+<body>
+<p>In this example notice that the first component has generated content while the second uses the slotted content.</p>
+<p>Also note that the first component uses the built-in styles while the second has the variables modified. CSS vars can bleed into the shadow as well as CSS parts.</p>
+
+<shout-out></shout-out>
+<shout-out id="custom">What you talking about?</shout-out>
+
+<script type="module">
+	window.addEventListener('DOMContentLoaded', init);
+
+	function init() {
+	}
+</script>
+<script type="module">
+	class ShoutOut extends HTMLElement {
+		constructor() {
+			super();
+			this.attachShadow({mode : 'open'});
+			this.shadowRoot.innerHTML = `
+				<style>
+					:host {
+						display : block;
+						margin : 1rem;
+						padding : 1rem;
+																		background : var(--background-color, red);
+						color : var(--text-color, white);
+
+						font-size: var(--text-size, 3rem);
+						font-family : sans-serif;
+
+						text-align : center;
+					}
+				</style>
+				<p><slot>Hey now!</slot></p>
+			`;
+
+			console.log(`Constructed : `, this);
+		}
+
+		connectedCallback() {
+			console.log(`Connected :`, this);
+		}
+
+		disconnectedCallback() {
+			console.log(`Disconnected :`, this);
+		}
+	}
+
+	customElements.define('shout-out', ShoutOut);
+</script>
+</body>
+</html>
